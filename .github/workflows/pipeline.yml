@@ -152,6 +152,9 @@ jobs:
     name: deploy to dev
     needs: build
     if: github.ref == 'refs/heads/main' && vars.ACR_LOGIN_SERVER != ''
+    permissions:
+      contents: read
+      id-token: write # a called workflow cannot get more permissions than its caller
     uses: ./.github/workflows/deploy.yml
     with:
       environment: dev
@@ -161,6 +164,9 @@ jobs:
   deploy-prod:
     name: deploy to prod
     needs: [build, deploy-dev]
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/deploy.yml
     with:
       environment: prod # protected environment: requires a reviewer to approve
