@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7aa2f7"/></marker>
+  </defs>
+  <rect width="1200" height="800" fill="#0f172a"/>
+  <text x="60" y="70" fill="#f8fafc" font-size="34" font-weight="700">CI/CD to private AKS with GitHub Actions</text>
+  <text x="60" y="105" fill="#94a3b8" font-size="18">Quality gate · security scans · signed-in with OIDC · Helm atomic deploys · prod approval</text>
+
+  <!-- stage boxes -->
+  <g font-size="15">
+    <rect x="60" y="160" width="250" height="250" rx="14" fill="#111c33" stroke="#3b82f6" stroke-width="2"/>
+    <text x="80" y="195" fill="#93c5fd" font-size="20" font-weight="600">1  Quality</text>
+    <text x="80" y="232" fill="#e2e8f0">ruff lint + format</text>
+    <text x="80" y="262" fill="#e2e8f0">pytest, 100% coverage</text>
+    <text x="80" y="292" fill="#e2e8f0">coverage gate ≥ 90%</text>
+    <text x="80" y="322" fill="#e2e8f0">SonarQube scan</text>
+    <text x="80" y="352" fill="#e2e8f0">quality gate blocks merge</text>
+
+    <rect x="345" y="160" width="250" height="250" rx="14" fill="#111c33" stroke="#ef4444" stroke-width="2"/>
+    <text x="365" y="195" fill="#fca5a5" font-size="20" font-weight="600">2  Security</text>
+    <text x="365" y="232" fill="#e2e8f0">Trivy: dependencies</text>
+    <text x="365" y="262" fill="#e2e8f0">Trivy: leaked secrets</text>
+    <text x="365" y="292" fill="#e2e8f0">Trivy: Helm misconfig</text>
+    <text x="365" y="322" fill="#e2e8f0">HIGH / CRITICAL fail</text>
+
+    <rect x="630" y="160" width="250" height="250" rx="14" fill="#111c33" stroke="#f59e0b" stroke-width="2"/>
+    <text x="650" y="195" fill="#fcd34d" font-size="20" font-weight="600">3  Build</text>
+    <text x="650" y="232" fill="#e2e8f0">multi-stage Dockerfile</text>
+    <text x="650" y="262" fill="#e2e8f0">non-root, slim runtime</text>
+    <text x="650" y="292" fill="#e2e8f0">Trivy image scan</text>
+    <text x="650" y="322" fill="#e2e8f0">push to ACR (OIDC)</text>
+    <text x="650" y="352" fill="#e2e8f0">tag = commit SHA</text>
+
+    <rect x="915" y="160" width="225" height="250" rx="14" fill="#111c33" stroke="#22c55e" stroke-width="2"/>
+    <text x="935" y="195" fill="#86efac" font-size="20" font-weight="600">4  Deploy</text>
+    <text x="935" y="232" fill="#e2e8f0">dev: automatic</text>
+    <text x="935" y="262" fill="#e2e8f0">prod: reviewer approval</text>
+    <text x="935" y="292" fill="#e2e8f0">helm --atomic (rollback)</text>
+    <text x="935" y="322" fill="#e2e8f0">rollout + smoke test</text>
+  </g>
+  <line x1="310" y1="285" x2="341" y2="285" stroke="#7aa2f7" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="595" y1="285" x2="626" y2="285" stroke="#7aa2f7" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="880" y1="285" x2="911" y2="285" stroke="#7aa2f7" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- private cluster -->
+  <rect x="60" y="460" width="1080" height="250" rx="14" fill="#111c33" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="495" fill="#e2e8f0" font-size="20" font-weight="600">Reaching a private AKS API without a VPN</text>
+  <rect x="80" y="520" width="250" height="160" rx="12" fill="#1e293b" stroke="#475569"/>
+  <text x="100" y="555" fill="#e2e8f0" font-size="16" font-weight="600">GitHub runner</text>
+  <text x="100" y="585" fill="#94a3b8" font-size="14">azure/login (OIDC)</text>
+  <text x="100" y="610" fill="#94a3b8" font-size="14">no client secret stored</text>
+  <rect x="440" y="520" width="300" height="160" rx="12" fill="#1e293b" stroke="#475569"/>
+  <text x="460" y="555" fill="#e2e8f0" font-size="16" font-weight="600">az aks command invoke</text>
+  <text x="460" y="585" fill="#94a3b8" font-size="14">uploads the Helm chart</text>
+  <text x="460" y="610" fill="#94a3b8" font-size="14">runs helm inside the cluster</text>
+  <text x="460" y="635" fill="#94a3b8" font-size="14">through the Azure control plane</text>
+  <rect x="850" y="520" width="270" height="160" rx="12" fill="#0b1324" stroke="#22c55e"/>
+  <text x="870" y="555" fill="#86efac" font-size="16" font-weight="600">orders-api on AKS</text>
+  <text x="870" y="585" fill="#cbd5e1" font-size="14">HPA, PDB, zone spread</text>
+  <text x="870" y="610" fill="#cbd5e1" font-size="14">NetworkPolicy, read-only FS</text>
+  <text x="870" y="635" fill="#cbd5e1" font-size="14">workload identity, /metrics</text>
+  <line x1="330" y1="600" x2="436" y2="600" stroke="#7aa2f7" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="740" y1="600" x2="846" y2="600" stroke="#7aa2f7" stroke-width="3" marker-end="url(#a)"/>
+
+  <text x="60" y="760" fill="#64748b" font-size="15">Python 3.13 · FastAPI · Prometheus client · Helm · SonarQube · Trivy · Azure Container Registry · AKS</text>
+</svg>

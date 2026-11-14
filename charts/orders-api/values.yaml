@@ -1,0 +1,47 @@
+replicaCount: 2
+
+image:
+  repository: myregistry.azurecr.io/orders-api
+  tag: ""          # set by the pipeline to the commit SHA
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    memory: 192Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  minAvailable: 1
+
+service:
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: webapprouting.kubernetes.azure.com   # AKS app routing add-on
+  host: orders.example.com
+  tlsSecretName: ""
+
+# Workload identity lets the pod call Azure services without stored secrets.
+serviceAccount:
+  create: true
+  workloadIdentityClientId: ""
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  enabled: false   # turn on when the Prometheus Operator CRDs are installed
+  interval: 30s
+
+env:
+  LOG_LEVEL: info

@@ -1,0 +1,59 @@
+name: deploy
+
+# Reusable deploy job. The AKS API server is private, so GitHub-hosted runners
+# cannot reach it directly; `az aks command invoke` runs Helm inside the cluster
+# through the Azure control plane instead. No VPN or self-hosted runner needed.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      image:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      RG: ${{ vars.AKS_RESOURCE_GROUP }}
+      CLUSTER: ${{ vars.AKS_CLUSTER_NAME }}
+      NAMESPACE: orders
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: helm upgrade (atomic, rolls back on failure)
+        run: |
+          IMAGE="${{ inputs.image }}"
+          REPO="${IMAGE%:*}"
+          TAG="${IMAGE##*:}"
+          az aks command invoke -g "$RG" -n "$CLUSTER" --file charts/orders-api \
+            --command "helm upgrade --install orders-api ./orders-api \
+              --namespace $NAMESPACE --create-namespace \
+              --set image.repository=$REPO --set image.tag=$TAG \
+              --set serviceAccount.workloadIdentityClientId=${{ vars.APP_IDENTITY_CLIENT_ID }} \
+              -f ./orders-api/values-${{ inputs.environment }}.yaml \
+              --atomic --timeout 5m --wait" \
+            --query "{exitCode: exitCode, logs: logs}" -o json | tee result.json
+          test "$(jq -r .exitCode result.json)" = "0"
+
+      - name: smoke test
+        run: |
+          az aks command invoke -g "$RG" -n "$CLUSTER" \
+            --command "kubectl -n $NAMESPACE rollout status deploy/orders-api --timeout=120s && \
+                       kubectl -n $NAMESPACE run smoke-$GITHUB_RUN_ID --rm -i --restart=Never \
+                         --image=curlimages/curl:8.11.1 -- curl -fsS http://orders-api/readyz" \
+            --query exitCode -o tsv | grep -qx 0
