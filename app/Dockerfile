@@ -15,9 +15,18 @@ FROM python:3.13-slim
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
-RUN groupadd --system --gid 10001 app \
+# Patch OS packages, then remove pip/setuptools: they are not needed at runtime
+# and only add attack surface (and CVEs) to the final image.
+RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/* \
+ && python -m pip uninstall -y pip setuptools wheel || true \
+ && groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --no-create-home app
 COPY --from=build /opt/venv /opt/venv
+RUN rm -rf /opt/venv/lib/python3.13/site-packages/pip* \
+           /opt/venv/lib/python3.13/site-packages/setuptools* \
+           /opt/venv/bin/pip*
 USER 10001:10001
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:8080/healthz'); sys.exit(0)"
